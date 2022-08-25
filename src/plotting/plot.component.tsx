@@ -14,6 +14,7 @@ import {
   LineController,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import ZoomAndPan from 'chartjs-plugin-zoom';
 import React from 'react';
 import { Chart } from 'react-chartjs-2';
 import { useRecords } from '../api/records';
@@ -29,7 +30,8 @@ ChartJS.register(
   Legend,
   Title,
   ScatterController,
-  LineController
+  LineController,
+  ZoomAndPan
 );
 
 type FullPlotProps = {
@@ -45,6 +47,19 @@ export const Plot = (props: FullPlotProps) => {
         title: {
           text: title,
           display: true,
+        },
+        zoom: {
+          zoom: {
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true,
+            },
+          },
+          pan: {
+            enabled: true,
+          },
         },
       },
       scales: {

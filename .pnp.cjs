@@ -60,6 +60,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["axios", "npm:0.27.2"],\
             ["chart.js", "npm:3.9.1"],\
             ["chartjs-adapter-date-fns", "virtual:c9244accb1038960b8bd2ad679a4254224d40b15df01d8c1ca49bdc22d22637447d555aee5f07b768c5deaa012fb66b3da954479d1ae1181e2bbdad9a15b5496#npm:2.0.0"],\
+            ["chartjs-plugin-zoom", "virtual:c9244accb1038960b8bd2ad679a4254224d40b15df01d8c1ca49bdc22d22637447d555aee5f07b768c5deaa012fb66b3da954479d1ae1181e2bbdad9a15b5496#npm:1.2.1"],\
             ["cross-env", "npm:7.0.3"],\
             ["cypress", "npm:9.7.0"],\
             ["cypress-failed-log", "npm:2.10.0"],\
@@ -7758,6 +7759,29 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["chartjs-plugin-zoom", [\
+        ["npm:1.2.1", {\
+          "packageLocation": "./.yarn/cache/chartjs-plugin-zoom-npm-1.2.1-df03c2d349-ea053ff103.zip/node_modules/chartjs-plugin-zoom/",\
+          "packageDependencies": [\
+            ["chartjs-plugin-zoom", "npm:1.2.1"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:c9244accb1038960b8bd2ad679a4254224d40b15df01d8c1ca49bdc22d22637447d555aee5f07b768c5deaa012fb66b3da954479d1ae1181e2bbdad9a15b5496#npm:1.2.1", {\
+          "packageLocation": "./.yarn/__virtual__/chartjs-plugin-zoom-virtual-3f08b24a3d/0/cache/chartjs-plugin-zoom-npm-1.2.1-df03c2d349-ea053ff103.zip/node_modules/chartjs-plugin-zoom/",\
+          "packageDependencies": [\
+            ["chartjs-plugin-zoom", "virtual:c9244accb1038960b8bd2ad679a4254224d40b15df01d8c1ca49bdc22d22637447d555aee5f07b768c5deaa012fb66b3da954479d1ae1181e2bbdad9a15b5496#npm:1.2.1"],\
+            ["@types/chart.js", null],\
+            ["chart.js", "npm:3.9.1"],\
+            ["hammerjs", "npm:2.0.8"]\
+          ],\
+          "packagePeers": [\
+            "@types/chart.js",\
+            "chart.js"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["check-more-types", [\
         ["npm:2.24.0", {\
           "packageLocation": "./.yarn/cache/check-more-types-npm-2.24.0-fa2e491b27-b09080ec34.zip/node_modules/check-more-types/",\
@@ -11268,6 +11292,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["hammerjs", [\
+        ["npm:2.0.8", {\
+          "packageLocation": "./.yarn/cache/hammerjs-npm-2.0.8-f656ba2573-b092da7d15.zip/node_modules/hammerjs/",\
+          "packageDependencies": [\
+            ["hammerjs", "npm:2.0.8"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["handle-thing", [\
         ["npm:2.0.1", {\
           "packageLocation": "./.yarn/cache/handle-thing-npm-2.0.1-084baca59e-68071f3130.zip/node_modules/handle-thing/",\
@@ -14448,6 +14481,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["axios", "npm:0.27.2"],\
             ["chart.js", "npm:3.9.1"],\
             ["chartjs-adapter-date-fns", "virtual:c9244accb1038960b8bd2ad679a4254224d40b15df01d8c1ca49bdc22d22637447d555aee5f07b768c5deaa012fb66b3da954479d1ae1181e2bbdad9a15b5496#npm:2.0.0"],\
+            ["chartjs-plugin-zoom", "virtual:c9244accb1038960b8bd2ad679a4254224d40b15df01d8c1ca49bdc22d22637447d555aee5f07b768c5deaa012fb66b3da954479d1ae1181e2bbdad9a15b5496#npm:1.2.1"],\
             ["cross-env", "npm:7.0.3"],\
             ["cypress", "npm:9.7.0"],\
             ["cypress-failed-log", "npm:2.10.0"],\
