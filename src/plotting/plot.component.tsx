@@ -103,13 +103,26 @@ const Plot = (props: PlotProps) => {
   }, [foundDatasets]);
 
   const maxima: number[] = React.useMemo(() => {
-    return foundDatasets.map(
+    const x = foundDatasets.map(
       (dataset) =>
         Math.ceil(
           Math.max(...dataset.data.map((point) => point[dataset.name])) / 10
         ) * 10
     );
+    console.log('minima ' + JSON.stringify(x));
+    return x;
   }, [foundDatasets]);
+
+  const lowerPercentages: number[] = React.useMemo(() => {
+    const y = minima.map((minimal, i) => {
+      const maximal = maxima[i];
+      const lowerPercentage = minimal / maximal;
+      return lowerPercentage;
+    });
+
+    console.log('percentages are ' + JSON.stringify(y));
+    return y;
+  }, [maxima, minima]);
 
   const xOffsets = [60, -50 + (graphRef?.current?.offsetWidth ?? 600)];
   // const tickPadding = [0, 0, -15];
@@ -138,7 +151,7 @@ const Plot = (props: PlotProps) => {
         // might need something fancier than this to prevent label overflow...
         // this can render 6 characters without overflow
         padding={{ top: 50, left: 60, right: 50, bottom: 50 }}
-        domain={{ y: [0, 1] }}
+        domain={{ y: [Math.min(...lowerPercentages), 1] }}
       >
         <VictoryLabel
           text={title}
@@ -163,16 +176,30 @@ const Plot = (props: PlotProps) => {
             })}
         />
         <VictoryAxis />
-        {foundDatasets.map((dataset, i) => (
-          <VictoryAxis
-            dependentAxis
-            key={dataset.name}
-            offsetX={xOffsets[i]}
-            tickValues={[0.25, 0.5, 0.75, 1]}
-            tickFormat={(t: number) => Math.round(t * maxima[i] * 10) / 10}
-            domain={{ y: [minima[i], maxima[i]] }}
-          />
-        ))}
+        {foundDatasets.map((dataset, i) => {
+          const minimal = minima[i];
+          const maximal = maxima[i];
+          const difference = maximal - minimal;
+          const tickValues = [
+            minimal,
+            minimal + difference * 0.25,
+            minimal + difference * 0.5,
+            minimal + difference * 0.75,
+            maximal,
+          ];
+          console.log('tickVals ' + JSON.stringify(tickValues));
+
+          return (
+            <VictoryAxis
+              dependentAxis
+              key={dataset.name}
+              offsetX={xOffsets[i]}
+              tickValues={[0.25, 0.5, 0.75, 1]}
+              tickFormat={(t: number) => Math.round(t * maxima[i] * 10) / 10}
+              // domain={{ y: [maxima[i] * 0.25, maxima[i]] }}
+            />
+          );
+        })}
         {selectedChannels.map((channel, i) => {
           const currentDataset = datasets.find(
             (dataset) => dataset.name === channel.name
