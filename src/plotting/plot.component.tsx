@@ -177,24 +177,22 @@ const Plot = (props: PlotProps) => {
         />
         <VictoryAxis />
         {foundDatasets.map((dataset, i) => {
-          const minimal = minima[i];
-          const maximal = maxima[i];
-          const difference = maximal - minimal;
+          const lowerPercentage = lowerPercentages[i];
+          const percentageDifference = 1 - lowerPercentage;
           const tickValues = [
-            minimal,
-            minimal + difference * 0.25,
-            minimal + difference * 0.5,
-            minimal + difference * 0.75,
-            maximal,
+            lowerPercentage,
+            lowerPercentage + percentageDifference * 0.25,
+            lowerPercentage + percentageDifference * 0.5,
+            lowerPercentage + percentageDifference * 0.75,
+            1,
           ];
-          console.log('tickVals ' + JSON.stringify(tickValues));
 
           return (
             <VictoryAxis
               dependentAxis
               key={dataset.name}
               offsetX={xOffsets[i]}
-              tickValues={[0.25, 0.5, 0.75, 1]}
+              tickValues={tickValues}
               tickFormat={(t: number) => Math.round(t * maxima[i] * 10) / 10}
               // domain={{ y: [maxima[i] * 0.25, maxima[i]] }}
             />
