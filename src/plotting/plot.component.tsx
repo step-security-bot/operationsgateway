@@ -9,6 +9,7 @@ import {
   VictoryLegend,
   VictoryTooltip,
   VictoryGroup,
+  VictoryAxis,
 } from 'victory';
 import {
   XAxisSettings,
@@ -81,6 +82,38 @@ const Plot = (props: PlotProps) => {
     }
   });
 
+  const foundDatasets: PlotDataset[] = React.useMemo(() => {
+    const something: PlotDataset[] = [];
+    selectedChannels.forEach((channel) => {
+      const found = datasets.find((dataset) => dataset.name === channel.name);
+      if (found) something.push(found);
+    });
+    return something;
+  }, [datasets, selectedChannels]);
+
+  const minima: number[] = React.useMemo(() => {
+    const x = foundDatasets.map(
+      (dataset) =>
+        Math.floor(
+          Math.min(...dataset.data.map((point) => point[dataset.name])) / 10
+        ) * 10
+    );
+    console.log('minima ' + JSON.stringify(x));
+    return x;
+  }, [foundDatasets]);
+
+  const maxima: number[] = React.useMemo(() => {
+    return foundDatasets.map(
+      (dataset) =>
+        Math.ceil(
+          Math.max(...dataset.data.map((point) => point[dataset.name])) / 10
+        ) * 10
+    );
+  }, [foundDatasets]);
+
+  const xOffsets = [60, -50 + (graphRef?.current?.offsetWidth ?? 600)];
+  // const tickPadding = [0, 0, -15];
+
   return (
     <div
       ref={graphRef}
@@ -105,6 +138,7 @@ const Plot = (props: PlotProps) => {
         // might need something fancier than this to prevent label overflow...
         // this can render 6 characters without overflow
         padding={{ top: 50, left: 60, right: 50, bottom: 50 }}
+        domain={{ y: [0, 1] }}
       >
         <VictoryLabel
           text={title}
@@ -128,7 +162,18 @@ const Plot = (props: PlotProps) => {
               return { name: channel.name, symbol: { fill: '#e31a1c' } };
             })}
         />
-        {selectedChannels.map((channel) => {
+        <VictoryAxis />
+        {foundDatasets.map((dataset, i) => (
+          <VictoryAxis
+            dependentAxis
+            key={dataset.name}
+            offsetX={xOffsets[i]}
+            tickValues={[0.25, 0.5, 0.75, 1]}
+            tickFormat={(t: number) => Math.round(t * maxima[i] * 10) / 10}
+            domain={{ y: [minima[i], maxima[i]] }}
+          />
+        ))}
+        {selectedChannels.map((channel, i) => {
           const currentDataset = datasets.find(
             (dataset) => dataset.name === channel.name
           );
@@ -145,7 +190,7 @@ const Plot = (props: PlotProps) => {
                     }}
                     data={currentDataset.data}
                     x={XAxis}
-                    y={currentDataset.name}
+                    y={(datum) => datum[currentDataset.name] / maxima[i]}
                   />
                 )}
                 {/* We render a scatter graph no matter what as otherwise line charts
@@ -159,7 +204,7 @@ const Plot = (props: PlotProps) => {
                   }}
                   data={currentDataset.data}
                   x={XAxis}
-                  y={currentDataset.name}
+                  y={(datum) => datum[currentDataset.name] / maxima[i]}
                   size={type === 'line' ? 2 : 3}
                   labels={({ datum }) => {
                     const formattedXLabel = formatTooltipLabel(
@@ -167,7 +212,7 @@ const Plot = (props: PlotProps) => {
                       XAxisSettings.scale
                     );
                     const formattedYLabel = formatTooltipLabel(
-                      datum._y,
+                      datum[currentDataset.name],
                       YAxesSettings.scale
                     );
                     return `(${formattedXLabel}, ${formattedYLabel})`;
