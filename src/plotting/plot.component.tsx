@@ -1,10 +1,11 @@
 import React from 'react';
-import {
+import type {
   XAxisScale,
   PlotDataset,
   PlotType,
   YAxesScale,
   SelectedPlotChannel,
+  PlotContinuity,
 } from '../app.types';
 // only import types as we don't actually run any chart.js code in React
 import type { ChartOptions, ChartDataset } from 'chart.js';
@@ -19,7 +20,7 @@ export interface PlotProps {
   type: PlotType;
   XAxisScale: XAxisScale;
   YAxesScale: YAxesScale;
-  XAxis: string;
+  XAxis?: string;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   gridVisible: boolean;
   axesLabelsVisible: boolean;
@@ -28,6 +29,7 @@ export interface PlotProps {
   yMinimum?: number;
   yMaximum?: number;
   viewReset: boolean;
+  plotContinuity: PlotContinuity;
 }
 
 const Plot = (props: PlotProps) => {
@@ -47,6 +49,7 @@ const Plot = (props: PlotProps) => {
     yMinimum,
     yMaximum,
     viewReset,
+    plotContinuity,
   } = props;
 
   // set the initial options
@@ -196,11 +199,12 @@ const Plot = (props: PlotProps) => {
                 : undefined,
             pointRadius: lineStyle === 'dotted' ? 3 : undefined,
             borderCapStyle: lineStyle === 'dotted' ? 'round' : undefined,
+            spanGaps: plotContinuity === 'continuous',
           } as ChartDataset<PlotType, PlotDataset['data']>;
         }),
       })
     );
-  }, [datasets, XAxis, selectedPlotChannels]);
+  }, [datasets, XAxis, selectedPlotChannels, plotContinuity]);
 
   return (
     <div

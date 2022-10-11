@@ -4,10 +4,10 @@ import { PlotDataset, XAxisScale } from '../app.types';
 import { format } from 'date-fns';
 
 export const formatTooltipLabel = (
-  label: number,
+  label: number | null,
   scale: XAxisScale
-): number | string => {
-  if (scale === 'time') {
+): number | string | null => {
+  if (scale === 'time' && label !== null) {
     return format(label, 'yyyy-MM-dd HH:mm:ss');
   }
   return label;
@@ -41,13 +41,13 @@ function exportChart(canvas: HTMLCanvasElement | null, title: string): void {
  * Each DataRow has an X value and at least one other value
  */
 type DataRow = {
-  [column: string]: number;
+  [column: string]: number | null;
 };
 
 export const constructDataRows = (
   XAxis: string,
   plots: PlotDataset[]
-): (string | number)[][] => {
+): (string | number | null)[][] => {
   // First row of file, i.e. the column names
   const headerRow = [XAxis].concat(plots.map((plot) => plot.name));
 
@@ -57,7 +57,7 @@ export const constructDataRows = (
   plots.forEach((plot) => {
     const plotDataset = plot.data;
     for (let i = 0; i < plotDataset.length; i++) {
-      const currentPoint: { [x: string]: number } = plotDataset[i];
+      const currentPoint: { [point: string]: number | null } = plotDataset[i];
 
       // Extract the X and Y values for this point in the dataset
       const currentPointXVal = currentPoint[XAxis];
@@ -93,22 +93,25 @@ export const constructDataRows = (
     const row1XVal = row1[XAxis];
     const row2XVal = row2[XAxis];
 
+    if (!row1XVal || !row2XVal) return 0;
     if (row1XVal > row2XVal) return 1;
     return -1;
   });
 
   // Transform the DataRow array into a 2D array of data, corresponding to rows in CSV
   // This is usually numbered data but is string in the case of formatted timestamps
-  const finalCsvRows: (string | number)[][] = sortedDataRows.map((dataRow) => {
-    return headerRow.map((header) => {
-      if (Object.keys(dataRow).includes(header)) {
-        return header === 'timestamp'
-          ? formatTooltipLabel(dataRow[header], 'time')
-          : dataRow[header];
-      }
-      return '';
-    });
-  });
+  const finalCsvRows: (string | number | null)[][] = sortedDataRows.map(
+    (dataRow) => {
+      return headerRow.map((header) => {
+        if (Object.keys(dataRow).includes(header)) {
+          return header === 'timestamp'
+            ? formatTooltipLabel(dataRow[header], 'time')
+            : dataRow[header];
+        }
+        return '';
+      });
+    }
+  );
 
   return [headerRow, ...finalCsvRows];
 };
@@ -118,8 +121,12 @@ export const constructDataRows = (
  *  @param data The data to export
  *  @param title The title of the plot (for the file name)
  */
-function exportData(title: string, XAxis: string, plots?: PlotDataset[]): void {
-  if (plots && plots.length > 0) {
+function exportData(
+  title: string,
+  XAxis?: string,
+  plots?: PlotDataset[]
+): void {
+  if (XAxis && plots && plots.length > 0) {
     const csvArray = constructDataRows(XAxis, plots);
 
     const csvContent =
@@ -143,7 +150,7 @@ export interface PlotButtonsProps {
   data?: PlotDataset[];
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   title: string;
-  XAxis: string;
+  XAxis?: string;
   gridVisible: boolean;
   axesLabelsVisible: boolean;
   toggleGridVisibility: () => void;

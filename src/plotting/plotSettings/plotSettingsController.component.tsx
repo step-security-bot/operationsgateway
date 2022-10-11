@@ -1,16 +1,18 @@
 import React from 'react';
 import { Grid, Box, styled, Tab, Tabs } from '@mui/material';
-import {
+import type {
   XAxisScale,
   YAxesScale,
   FullScalarChannelMetadata,
   PlotType,
   SelectedPlotChannel,
+  PlotContinuity,
 } from '../../app.types';
 import ChartTypeButtons from './chartTypeButtons.component';
 import PlotTitleField from './plotTitleField.component';
 import XAxisTab from './xAxisTab.component';
 import YAxisTab from './yAxisTab.component';
+import PlotContinuityRadioGroup from './plotContinuityRadioGroup.component';
 
 type TabValue = 'X' | 'Y';
 
@@ -56,7 +58,7 @@ export interface PlotSettingsControllerProps {
   changePlotTitle: (title: string) => void;
   plotType: PlotType;
   changePlotType: (plotType: PlotType) => void;
-  XAxis: string;
+  XAxis?: string;
   changeXAxis: (value: string) => void;
   XAxisScale: XAxisScale;
   changeXAxisScale: (XAxisScale: XAxisScale) => void;
@@ -70,6 +72,8 @@ export interface PlotSettingsControllerProps {
   changeXMaximum: (value: number | undefined) => void;
   changeYMinimum: (value: number | undefined) => void;
   changeYMaximum: (value: number | undefined) => void;
+  plotContinuity: PlotContinuity;
+  changePlotContinuity: (continuity: PlotContinuity) => void;
 }
 
 const PlotSettingsController = (props: PlotSettingsControllerProps) => {
@@ -91,6 +95,8 @@ const PlotSettingsController = (props: PlotSettingsControllerProps) => {
     changeXMaximum,
     changeYMinimum,
     changeYMaximum,
+    plotContinuity,
+    changePlotContinuity,
   } = props;
 
   const [XYTabValue, setXYTabValue] = React.useState<TabValue>('X');
@@ -109,6 +115,13 @@ const PlotSettingsController = (props: PlotSettingsControllerProps) => {
       </Grid>
       <Grid item>
         <ChartTypeButtons plotType={plotType} changePlotType={changePlotType} />
+      </Grid>
+      <Grid item>
+        <PlotContinuityRadioGroup
+          plotType={plotType}
+          plotContinuity={plotContinuity}
+          changePlotContinuity={changePlotContinuity}
+        />
       </Grid>
       <Grid item>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

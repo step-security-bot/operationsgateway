@@ -13,12 +13,13 @@ import {
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import {
+import type {
   XAxisScale,
   YAxesScale,
   PlotType,
   SelectedPlotChannel,
   FullScalarChannelMetadata,
+  PlotContinuity,
 } from '../app.types';
 import { usePlotRecords } from '../api/records';
 import { useScalarChannels } from '../api/channels';
@@ -34,6 +35,7 @@ const drawerWidth = 300;
 
 const PlotWindow = (props: PlotWindowProps) => {
   const { onClose, untitledTitle } = props;
+
   const [plotTitle, setPlotTitle] = React.useState('');
   const [plotType, setPlotType] = React.useState<PlotType>('scatter');
   const [xMinimum, setXMinimum] = React.useState<number | undefined>(undefined);
@@ -43,7 +45,7 @@ const PlotWindow = (props: PlotWindowProps) => {
   const [XAxisScale, setXAxisScale] = React.useState<XAxisScale>('linear');
   const [YAxesScale, setYAxesScale] = React.useState<YAxesScale>('linear');
 
-  const [XAxis, setXAxis] = React.useState<string>('');
+  const [XAxis, setXAxis] = React.useState<string | undefined>(undefined);
   const [selectedPlotChannels, setSelectedPlotChannels] = React.useState<
     SelectedPlotChannel[]
   >([]);
@@ -51,6 +53,9 @@ const PlotWindow = (props: PlotWindowProps) => {
   const [axesLabelsVisible, setAxesLabelsVisible] =
     React.useState<boolean>(true);
   const [viewFlag, setViewFlag] = React.useState<boolean>(false);
+
+  const [plotContinuity, setPlotContinuity] =
+    React.useState<PlotContinuity>('continuous');
 
   const toggleGridVisibility = React.useCallback(() => {
     setGridVisible(!gridVisible);
@@ -75,8 +80,8 @@ const PlotWindow = (props: PlotWindowProps) => {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
   const { data: records, isLoading: recordsLoading } = usePlotRecords(
-    XAxis,
-    selectedPlotChannels
+    selectedPlotChannels,
+    XAxis
   );
   const { data: channels, isLoading: channelsLoading } = useScalarChannels();
 
@@ -150,6 +155,8 @@ const PlotWindow = (props: PlotWindowProps) => {
                 changeXMaximum={setXMaximum}
                 changeYMinimum={setYMinimum}
                 changeYMaximum={setYMaximum}
+                plotContinuity={plotContinuity}
+                changePlotContinuity={setPlotContinuity}
               />
             </Box>
             {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props */}
@@ -225,6 +232,7 @@ const PlotWindow = (props: PlotWindowProps) => {
             yMinimum={yMinimum}
             yMaximum={yMaximum}
             viewReset={viewFlag}
+            plotContinuity={plotContinuity}
           />
         </Grid>
         {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props */}

@@ -159,9 +159,11 @@ export type YAxesScale = Extract<
 export type PlotDataset = {
   name: string;
   data: {
-    [x: string]: number;
+    [point: string]: number | null;
   }[];
 };
+
+export type PlotContinuity = 'continuous' | 'discontinuous';
 
 export type SelectedPlotChannel = {
   name: string;

@@ -1,6 +1,6 @@
 import React from 'react';
 import axios, { AxiosError } from 'axios';
-import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query';
+import { useQuery, UseQueryResult } from 'react-query';
 import {
   Channel,
   DateRange,
@@ -97,22 +97,54 @@ const fetchRecordCountQuery = (
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-export const useRecords = <T extends unknown = Record[]>(
-  options?: UseQueryOptions<Record[], AxiosError, T, [string]>
-): UseQueryResult<T, AxiosError> => {
+export const usePlotRecords = (
+  selectedPlotChannels: SelectedPlotChannel[],
+  XAxis?: string
+): UseQueryResult<PlotDataset[], AxiosError> => {
   useAppSelector(selectQueryParams);
   const { apiUrl } = useAppSelector(selectUrls);
 
   return useQuery(
     ['records'],
     () => {
-      return fetchRecords(apiUrl, {}, {});
+      if (!XAxis) XAxis = 'timestamp';
+      return fetchRecords(apiUrl, { [XAxis]: 'asc' }, {});
     },
     {
       onError: (error) => {
         console.log('Got error ' + error.message);
       },
-      ...(options ?? {}),
+      select: (records: Record[]) => {
+        const plotDatasets = selectedPlotChannels.map((plotChannel) => {
+          const plotChannelName = plotChannel.name;
+
+          // Add the initial entry for dataset called plotChannelName
+          // data field is currently empty, the below loop populates it
+          const newDataset: PlotDataset = {
+            name: plotChannelName,
+            data: [],
+          };
+
+          // Populate the above data field
+          records.forEach((record) => {
+            const formattedXAxis = getFormattedAxisData(record, XAxis ?? '');
+            const formattedYAxis = getFormattedAxisData(
+              record,
+              plotChannelName
+            );
+
+            const currentData = newDataset.data;
+            currentData.push({
+              [XAxis ?? '']: formattedXAxis, // this is annoying but theoretically if we ever reach here, XAxis will always be defined
+              [plotChannelName]: formattedYAxis,
+            });
+          });
+
+          return newDataset;
+        });
+
+        return plotDatasets;
+      },
     }
   );
 };
@@ -207,15 +239,15 @@ export const useRecordsPaginated = (): UseQueryResult<
 export const getFormattedAxisData = (
   record: Record,
   axisName: string
-): number => {
-  let formattedData = NaN;
+): number | null => {
+  let formattedData = null;
 
   switch (axisName) {
     case 'timestamp':
       formattedData = parseISO(record.metadata.timestamp).getTime();
       break;
     case 'shotnum':
-      formattedData = record.metadata.shotnum ?? NaN;
+      formattedData = record.metadata.shotnum ?? null;
       break;
     case 'activeArea':
       formattedData = parseInt(record.metadata.activeArea);
@@ -223,7 +255,7 @@ export const getFormattedAxisData = (
     case 'activeExperiment':
       formattedData = record.metadata.activeExperiment
         ? parseInt(record.metadata.activeExperiment)
-        : NaN;
+        : null;
       break;
     default:
       const channel = record.channels[axisName];
@@ -236,54 +268,6 @@ export const getFormattedAxisData = (
   }
 
   return formattedData;
-};
-
-// currently pass in the x and y axes just to sort out the select function but
-// eventually they'll be used to query for data
-export const usePlotRecords = (
-  XAxis: string,
-  selectedPlotChannels: SelectedPlotChannel[]
-): UseQueryResult<PlotDataset[], AxiosError> => {
-  const usePlotRecordsOptions = React.useMemo(
-    () => ({
-      select: (records: Record[]) => {
-        const plotDatasets = selectedPlotChannels.map((plotChannel) => {
-          const plotChannelName = plotChannel.name;
-
-          // Add the initial entry for dataset called plotChannelName
-          // data field is currently empty, the below loop populates it
-          const newDataset: PlotDataset = {
-            name: plotChannelName,
-            data: [],
-          };
-
-          // Populate the above data field
-          records.forEach((record) => {
-            const formattedXAxis = getFormattedAxisData(record, XAxis);
-            const formattedYAxis = getFormattedAxisData(
-              record,
-              plotChannelName
-            );
-
-            if (formattedXAxis && formattedYAxis) {
-              const currentData = newDataset.data;
-              currentData.push({
-                [XAxis]: formattedXAxis,
-                [plotChannelName]: formattedYAxis,
-              });
-            }
-          });
-
-          return newDataset;
-        });
-
-        return plotDatasets;
-      },
-    }),
-    [XAxis, selectedPlotChannels]
-  );
-
-  return useRecords(usePlotRecordsOptions);
 };
 
 export const useRecordCount = (): UseQueryResult<number, AxiosError> => {
