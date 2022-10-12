@@ -55,33 +55,36 @@ const Plot = (props: PlotProps) => {
     plotContinuity,
   } = props;
 
-  // TODO this needs to be improved
-  // Very rudimentary way of getting each unique date in the datasets
-  // Currently only encompasses one month
+  /**
+   * Returns a map of the midnight timestamps for each date represented in the plot data
+   * minus the first one (otherwise, the default plot view can be distorted)
+   * @param datasets the plot datasets
+   * @returns the map of timestamps
+   */
   const extractDates = (datasets: PlotDataset[]): number[] => {
     const returningDates: number[] = [];
+
     datasets.forEach((dataset) => {
       const data = dataset.data;
       data.forEach((point) => {
         const unixTimestamp = point.timestamp;
         if (unixTimestamp) {
           const dateObject = new Date(unixTimestamp);
+          const midnightTimestamp = new Date(
+            `2022-04-${dateObject.getDate()} 00:00:00`
+          ).getTime();
 
-          if (!returningDates.includes(dateObject.getDate())) {
-            returningDates.push(dateObject.getDate());
+          if (!returningDates.includes(midnightTimestamp)) {
+            returningDates.push(midnightTimestamp);
           }
         }
       });
     });
 
-    const finalDates = returningDates.map((day) => {
-      return new Date(`2022-04-${day} 00:00:00`).getTime();
-    });
-
     // Don't want the first date line, can push the chart data to the right
-    finalDates.shift();
+    returningDates.shift();
 
-    return finalDates;
+    return returningDates;
   };
 
   // set the initial options
@@ -132,9 +135,6 @@ const Plot = (props: PlotProps) => {
       },
       scales: {
         x: {
-          ticks: {
-            source: 'data',
-          },
           type: XAxisScale === 'time' ? 'timeseries' : XAxisScale,
           bounds: XAxisScale !== 'time' ? 'ticks' : undefined,
           time: {
@@ -191,9 +191,7 @@ const Plot = (props: PlotProps) => {
       options?.plugins?.title && (options.plugins.title.text = title);
       options?.scales?.x && (options.scales.x.min = xMinimum);
       options?.scales?.x && (options.scales.x.max = xMaximum);
-      options?.scales?.x &&
-        (options.scales.x.type =
-          XAxisScale === 'time' ? 'timeseries' : XAxisScale);
+      options?.scales?.x && (options.scales.x.type = XAxisScale);
       options?.scales?.x &&
         (options.scales.x.bounds = XAxisScale !== 'time' ? 'ticks' : undefined);
       options?.scales?.x?.grid && (options.scales.x.grid.display = gridVisible);

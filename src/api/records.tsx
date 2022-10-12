@@ -103,12 +103,18 @@ export const usePlotRecords = (
 ): UseQueryResult<PlotDataset[], AxiosError> => {
   useAppSelector(selectQueryParams);
   const { apiUrl } = useAppSelector(selectUrls);
+  const parsedXAxis = XAxis ?? 'timestamp';
 
-  return useQuery(
-    ['records'],
-    () => {
-      if (!XAxis) XAxis = 'timestamp';
-      return fetchRecords(apiUrl, { [XAxis]: 'asc' }, {});
+  return useQuery<
+    Record[],
+    AxiosError,
+    PlotDataset[],
+    [string, { sort: SortType }]
+  >(
+    ['records', { sort: { [parsedXAxis]: 'asc' } }],
+    (params) => {
+      const { sort } = params.queryKey[1];
+      return fetchRecords(apiUrl, sort, {});
     },
     {
       onError: (error) => {
@@ -127,23 +133,28 @@ export const usePlotRecords = (
 
           // Populate the above data field
           records.forEach((record) => {
-            let formattedXAxis = getFormattedAxisData(record, XAxis ?? '');
-            let formattedYAxis = getFormattedAxisData(record, plotChannelName);
+            const formattedXAxis = getFormattedAxisData(record, parsedXAxis);
+            const formattedYAxis = getFormattedAxisData(
+              record,
+              plotChannelName
+            );
 
-            // TODO improve this, don't push anything instead of a null point
-            if (formattedXAxis && XAxis === 'timestamp') {
+            if (formattedXAxis && parsedXAxis === 'timestamp') {
               const parsedDate = new Date(formattedXAxis);
-              if (parsedDate.getHours() > 18 || parsedDate.getHours() < 9) {
-                formattedXAxis = null;
-                formattedYAxis = null;
+              if (parsedDate.getHours() >= 9 && parsedDate.getHours() <= 18) {
+                const currentData = newDataset.data;
+                currentData.push({
+                  [parsedXAxis]: formattedXAxis,
+                  [plotChannelName]: formattedYAxis,
+                });
               }
+            } else {
+              const currentData = newDataset.data;
+              currentData.push({
+                [parsedXAxis]: formattedXAxis,
+                [plotChannelName]: formattedYAxis,
+              });
             }
-
-            const currentData = newDataset.data;
-            currentData.push({
-              [XAxis ?? '']: formattedXAxis, // this is annoying but theoretically if we ever reach here, XAxis will always be defined
-              [plotChannelName]: formattedYAxis,
-            });
           });
 
           return newDataset;
