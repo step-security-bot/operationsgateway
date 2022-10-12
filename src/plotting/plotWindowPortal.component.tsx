@@ -74,6 +74,16 @@ class PlotWindowPortal extends React.PureComponent<
       chartjsZoomScript.defer = false;
       externalWindow.document.head.appendChild(chartjsZoomScript);
 
+      const chartjsAnnotationScript =
+        externalWindow.document.createElement('script');
+      chartjsAnnotationScript.src =
+        'https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.0.1/chartjs-plugin-annotation.min.js';
+      chartjsAnnotationScript.crossOrigin = 'anonymous';
+      chartjsAnnotationScript.referrerPolicy = 'no-referrer';
+      chartjsAnnotationScript.async = false;
+      chartjsAnnotationScript.defer = false;
+      externalWindow.document.head.appendChild(chartjsAnnotationScript);
+
       const chartjsDateFnsScript = document.createElement('script');
       // TODO: switch this to cdnjs once it's added - this is for consistency and so we can use renovate to update it
       chartjsDateFnsScript.src =

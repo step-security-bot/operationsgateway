@@ -12,6 +12,9 @@ import type { ChartOptions, ChartDataset } from 'chart.js';
 // we import this even though we don't use it so we can get typescript info added to ChartOptions
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type Zoom from 'chartjs-plugin-zoom';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type Annotations from 'chartjs-plugin-annotation';
+import { format } from 'date-fns';
 
 export interface PlotProps {
   datasets: PlotDataset[];
@@ -52,6 +55,35 @@ const Plot = (props: PlotProps) => {
     plotContinuity,
   } = props;
 
+  // TODO this needs to be improved
+  // Very rudimentary way of getting each unique date in the datasets
+  // Currently only encompasses one month
+  const extractDates = (datasets: PlotDataset[]): number[] => {
+    const returningDates: number[] = [];
+    datasets.forEach((dataset) => {
+      const data = dataset.data;
+      data.forEach((point) => {
+        const unixTimestamp = point.timestamp;
+        if (unixTimestamp) {
+          const dateObject = new Date(unixTimestamp);
+
+          if (!returningDates.includes(dateObject.getDate())) {
+            returningDates.push(dateObject.getDate());
+          }
+        }
+      });
+    });
+
+    const finalDates = returningDates.map((day) => {
+      return new Date(`2022-04-${day} 00:00:00`).getTime();
+    });
+
+    // Don't want the first date line, can push the chart data to the right
+    finalDates.shift();
+
+    return finalDates;
+  };
+
   // set the initial options
   const [optionsString, setOptionsString] = React.useState(
     JSON.stringify({
@@ -84,10 +116,27 @@ const Plot = (props: PlotProps) => {
             mode: 'xy',
           },
         },
+        annotation: {
+          annotations: extractDates(datasets).map((date) => ({
+            type: 'line',
+            xMin: date,
+            xMax: date,
+            borderColor: 'red',
+            borderWidth: 2,
+            label: {
+              content: format(new Date(date), 'yyyy-MM-dd'),
+              display: true,
+            },
+          })),
+        },
       },
       scales: {
         x: {
-          type: XAxisScale,
+          ticks: {
+            source: 'data',
+          },
+          type: XAxisScale === 'time' ? 'timeseries' : XAxisScale,
+          bounds: XAxisScale !== 'time' ? 'ticks' : undefined,
           time: {
             displayFormats: {
               millisecond: 'HH:mm:ss:SSS',
@@ -142,7 +191,11 @@ const Plot = (props: PlotProps) => {
       options?.plugins?.title && (options.plugins.title.text = title);
       options?.scales?.x && (options.scales.x.min = xMinimum);
       options?.scales?.x && (options.scales.x.max = xMaximum);
-      options?.scales?.x && (options.scales.x.type = XAxisScale);
+      options?.scales?.x &&
+        (options.scales.x.type =
+          XAxisScale === 'time' ? 'timeseries' : XAxisScale);
+      options?.scales?.x &&
+        (options.scales.x.bounds = XAxisScale !== 'time' ? 'ticks' : undefined);
       options?.scales?.x?.grid && (options.scales.x.grid.display = gridVisible);
       options?.scales?.x?.title &&
         (options.scales.x.title.display = axesLabelsVisible);
@@ -151,6 +204,20 @@ const Plot = (props: PlotProps) => {
       options?.scales?.y && (options.scales.y.max = yMaximum);
       options?.scales?.y && (options.scales.y.type = YAxesScale);
       options?.scales?.y?.grid && (options.scales.y.grid.display = gridVisible);
+      options?.plugins?.annotation &&
+        (options.plugins.annotation.annotations = extractDates(datasets).map(
+          (date) => ({
+            type: 'line',
+            xMin: date,
+            xMax: date,
+            borderColor: 'red',
+            borderWidth: 2,
+            label: {
+              content: format(new Date(date), 'yyyy-MM-dd'),
+              display: true,
+            },
+          })
+        ));
 
       return JSON.stringify(options);
     });
@@ -159,6 +226,7 @@ const Plot = (props: PlotProps) => {
     XAxisScale,
     YAxesScale,
     axesLabelsVisible,
+    datasets,
     gridVisible,
     title,
     xMaximum,

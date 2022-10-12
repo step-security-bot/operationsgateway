@@ -127,11 +127,17 @@ export const usePlotRecords = (
 
           // Populate the above data field
           records.forEach((record) => {
-            const formattedXAxis = getFormattedAxisData(record, XAxis ?? '');
-            const formattedYAxis = getFormattedAxisData(
-              record,
-              plotChannelName
-            );
+            let formattedXAxis = getFormattedAxisData(record, XAxis ?? '');
+            let formattedYAxis = getFormattedAxisData(record, plotChannelName);
+
+            // TODO improve this, don't push anything instead of a null point
+            if (formattedXAxis && XAxis === 'timestamp') {
+              const parsedDate = new Date(formattedXAxis);
+              if (parsedDate.getHours() > 18 || parsedDate.getHours() < 9) {
+                formattedXAxis = null;
+                formattedYAxis = null;
+              }
+            }
 
             const currentData = newDataset.data;
             currentData.push({
