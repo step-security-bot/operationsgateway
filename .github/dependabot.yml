@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /.yarn/sdks/eslint
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /.yarn/sdks/prettier
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /.yarn/sdks/typescript
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
